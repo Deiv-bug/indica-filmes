@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indica Filmes</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #111827;
+      --card: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #f59e0b;
+      --accent-2: #fb7185;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .filter-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .filter-select {
+      background: #0b1220;
+      color: var(--text);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.95rem;
+      min-width: 220px;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      text-align: center;
+      padding: 14px 0 2px;
+      display: none;
+    }
+
+    .grid {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding: 4px 2px 10px;
+      scrollbar-width: thin;
+      scrollbar-color: #475569 transparent;
+    }
+
+    .movies-nav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .card {
+      background: linear-gradient(160deg, var(--card), var(--surface));
+      border: 1px solid #334155;
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      flex: 0 0 180px;
+      cursor: pointer;
+    }
+
+    .movie-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .movie-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .poster {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      display: block;
+      background: #0b1220;
+    }
+
+    .content {
+      padding: 14px;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .title {
+      font-size: 1.02rem;
+      font-weight: 700;
+    }
+
+    .rating {
+      color: #111827;
+      background: var(--accent);
+      border-radius: 8px;
+      font-weight: 700;
+      padding: 2px 8px;
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+
+    .genre {
+      color: var(--accent-2);
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .desc {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .arrow-btn {
+      width: 38px;
+      height: 38px;
+      border: 1px solid #334155;
+      border-radius: 999px;
+      background: #0b1220;
+      color: var(--text);
+      font-size: 1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .arrow-btn:hover {
+      background: #1e293b;
+    }
+
+    .detail-view[hidden] {
+      display: none;
+    }
+
+    .detail-view {
+      margin-top: 12px;
+    }
+
+    .back-btn {
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: #0b1220;
+      color: var(--text);
+      padding: 8px 12px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    .detail-card {
+      display: grid;
+      grid-template-columns: minmax(180px, 260px) 1fr;
+      gap: 18px;
+      background: linear-gradient(160deg, var(--card), var(--surface));
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .detail-poster {
+      width: 100%;
+      border-radius: 10px;
+      display: block;
+    }
+
+    .detail-title {
+      font-size: clamp(1.35rem, 2.2vw, 1.9rem);
+      margin-bottom: 8px;
+    }
+
+    .detail-meta {
+      color: var(--accent-2);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .detail-section-title {
+      font-size: 1rem;
+      margin: 10px 0 6px;
+    }
+
+    .streaming-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .streaming-list li {
+      border: 1px solid #475569;
+      border-radius: 999px;
+      padding: 4px 10px 4px 6px;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .service-logo {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #0b1220;
+    }
+
+    @media (max-width: 680px) {
+      .arrow-btn {
+        display: none;
+      }
+
+      .detail-card {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Indica Filmes</h1>
+      <p class="subtitle">Uma seleção para maratonar no fim de semana</p>
+    </header>
+
+    <div class="filter-bar">
+      <label class="filter-label" for="genre-filter">Filtrar por gênero:</label>
+      <select class="filter-select" id="genre-filter" aria-label="Filtrar filmes por gênero">
+        <option value="todos">Todos</option>
+        <option value="ficcao-cientifica">Ficção científica</option>
+        <option value="fantasia">Fantasia</option>
+        <option value="suspense">Suspense</option>
+        <option value="animacao">Animação</option>
+        <option value="acao">Ação</option>
+        <option value="drama">Drama</option>
+        <option value="romance">Romance</option>
+        <option value="musical">Musical</option>
+      </select>
+    </div>
+
+    <div class="movies-nav">
+      <button class="arrow-btn" id="scroll-left" aria-label="Ver filmes anteriores">&#9664;</button>
+      <section class="grid" id="movies-grid" aria-label="Lista de filmes recomendados">
+      <a class="card movie-link" data-movie-id="interestelar" data-genres="ficcao-cientifica" href="#" aria-label="Saber mais sobre Interestelar">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/nCbkOyOMTEwlEV0LtCOvCnwEONA.jpg" alt="Cartaz do filme Interestelar" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">Interestelar</h2>
+            <span class="rating">8.6</span>
+          </div>
+          <p class="genre">Ficção científica</p>
+          <p class="desc">Uma jornada espacial para encontrar um novo lar para a humanidade.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="sociedade-do-anel" data-genres="fantasia" href="#" aria-label="Saber mais sobre A Sociedade do Anel">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg" alt="Cartaz do filme O Senhor dos Anéis: A Sociedade do Anel" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">A Sociedade do Anel</h2>
+            <span class="rating">8.8</span>
+          </div>
+          <p class="genre">Fantasia</p>
+          <p class="desc">Um grupo improvável parte em missão para destruir um anel poderoso.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="corra" data-genres="suspense" href="#" aria-label="Saber mais sobre Corra">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/tFXcEccSQMf3lfhfXKSU9iRBpa3.jpg" alt="Cartaz do filme Corra" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">Corra!</h2>
+            <span class="rating">7.8</span>
+          </div>
+          <p class="genre">Suspense</p>
+          <p class="desc">Visita à família da namorada vira um pesadelo psicológico.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="aranhaverso" data-genres="animacao,acao" href="#" aria-label="Saber mais sobre Aranhaverso">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg" alt="Cartaz do filme Homem-Aranha no Aranhaverso" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">Aranhaverso</h2>
+            <span class="rating">8.4</span>
+          </div>
+          <p class="genre">Animação / Ação</p>
+          <p class="desc">Miles Morales encontra outros Homens-Aranha de dimensões diferentes.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="parasita" data-genres="drama,suspense" href="#" aria-label="Saber mais sobre Parasita">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg" alt="Cartaz do filme Parasita" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">Parasita</h2>
+            <span class="rating">8.5</span>
+          </div>
+          <p class="genre">Drama / Suspense</p>
+          <p class="desc">Duas famílias de classes opostas se conectam de forma perigosa.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="la-la-land" data-genres="romance,musical" href="#" aria-label="Saber mais sobre La La Land">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg" alt="Cartaz do filme La La Land" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">La La Land</h2>
+            <span class="rating">8.0</span>
+          </div>
+          <p class="genre">Romance / Musical</p>
+          <p class="desc">Dois artistas perseguem sonhos em Los Angeles e testam seu amor.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="a-origem" data-genres="ficcao-cientifica,acao" href="#" aria-label="Saber mais sobre A Origem">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg" alt="Cartaz do filme A Origem" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">A Origem</h2>
+            <span class="rating">8.8</span>
+          </div>
+          <p class="genre">Ficção científica / Ação</p>
+          <p class="desc">Um ladrão invade sonhos para roubar segredos e recebe uma missão quase impossível.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="batman-cavaleiro-das-trevas" data-genres="acao,drama" href="#" aria-label="Saber mais sobre Batman: O Cavaleiro das Trevas">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg" alt="Cartaz do filme Batman: O Cavaleiro das Trevas" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">Batman: O Cavaleiro das Trevas</h2>
+            <span class="rating">9.0</span>
+          </div>
+          <p class="genre">Ação / Drama</p>
+          <p class="desc">Batman enfrenta o Coringa em uma guerra psicológica pelo destino de Gotham.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="duna-parte-2" data-genres="ficcao-cientifica,acao" href="#" aria-label="Saber mais sobre Duna: Parte 2">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg" alt="Cartaz do filme Duna: Parte 2" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">Duna: Parte 2</h2>
+            <span class="rating">8.5</span>
+          </div>
+          <p class="genre">Ficção científica / Ação</p>
+          <p class="desc">Paul Atreides se une aos Fremen para lutar contra quem destruiu sua família.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="whiplash" data-genres="drama" href="#" aria-label="Saber mais sobre Whiplash">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/7fn624j5lj3xTme2SgiLCeuedmO.jpg" alt="Cartaz do filme Whiplash" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">Whiplash</h2>
+            <span class="rating">8.5</span>
+          </div>
+          <p class="genre">Drama</p>
+          <p class="desc">Um jovem baterista encara um professor exigente e obsessivo em busca da perfeição.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="clube-da-luta" data-genres="drama,suspense" href="#" aria-label="Saber mais sobre Clube da Luta">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg" alt="Cartaz do filme Clube da Luta" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">Clube da Luta</h2>
+            <span class="rating">8.8</span>
+          </div>
+          <p class="genre">Drama / Suspense</p>
+          <p class="desc">Um homem insatisfeito cria um clube clandestino que sai completamente do controle.</p>
+        </div>
+      </a>
+
+      <a class="card movie-link" data-movie-id="coco" data-genres="animacao" href="#" aria-label="Saber mais sobre Viva: A Vida É uma Festa">
+        <img class="poster" src="https://image.tmdb.org/t/p/w500/6Ryitt95xrO8KXuqRGm1fUuNwqF.jpg" alt="Cartaz do filme Viva: A Vida É uma Festa" />
+        <div class="content">
+          <div class="title-row">
+            <h2 class="title">Viva: A Vida É uma Festa</h2>
+            <span class="rating">8.4</span>
+          </div>
+          <p class="genre">Animação</p>
+          <p class="desc">Miguel viaja ao mundo dos mortos para descobrir a verdade sobre sua família.</p>
+        </div>
+      </a>
+      </section>
+      <button class="arrow-btn" id="scroll-right" aria-label="Ver próximos filmes">&#9654;</button>
+    </div>
+    <p class="empty-state" id="empty-state">Nenhum filme encontrado para esse gênero.</p>
+
+    <section id="movie-detail" class="detail-view" hidden aria-live="polite">
+      <button id="back-to-list" class="back-btn" type="button">&#8592; Voltar para lista</button>
+      <article class="detail-card">
+        <img id="detail-poster" class="detail-poster" src="" alt="" />
+        <div>
+          <h2 id="detail-title" class="detail-title"></h2>
+          <p id="detail-genre" class="detail-meta"></p>
+          <p id="detail-synopsis"></p>
+          <h3 class="detail-section-title">Onde assistir</h3>
+          <ul id="detail-streaming" class="streaming-list"></ul>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script>
+    const movieData = {
+      "interestelar": {
+        synopsis: "Um grupo de astronautas atravessa um buraco de minhoca para buscar um novo futuro para a humanidade.",
+        streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+      },
+      "sociedade-do-anel": {
+        synopsis: "Frodo recebe a missão de destruir o Um Anel e impedir o avanço de Sauron sobre a Terra-média.",
+        streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+      },
+      "corra": {
+        synopsis: "Um jovem visita a família da namorada e descobre segredos perturbadores por trás da aparente hospitalidade.",
+        streaming: ["Prime Video", "Telecine", "Apple TV (aluguel)"]
+      },
+      "aranhaverso": {
+        synopsis: "Miles Morales encontra versões de outros universos do Homem-Aranha para impedir o colapso do multiverso.",
+        streaming: ["Netflix", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+      },
+      "parasita": {
+        synopsis: "Uma família em dificuldade financeira se infiltra na rotina de uma família rica, com consequências explosivas.",
+        streaming: ["Prime Video", "Telecine", "Apple TV (aluguel)"]
+      },
+      "la-la-land": {
+        synopsis: "Uma atriz e um pianista se apaixonam enquanto tentam equilibrar amor e ambição em Los Angeles.",
+        streaming: ["Prime Video", "Apple TV (aluguel)", "Google Play (aluguel)"]
+      },
+      "a-origem": {
+        synopsis: "Dom Cobb lidera uma equipe para implantar uma ideia na mente de um alvo durante o sono profundo.",
+        streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+      },
+      "batman-cavaleiro-das-trevas": {
+        synopsis: "Com Gotham ameaçada pelo Coringa, Batman precisa testar seus limites para proteger a cidade.",
+        streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+      },
+      "duna-parte-2": {
+        synopsis: "Paul assume seu destino entre os Fremen e lidera a resistência em Arrakis contra o Império.",
+        streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+      },
+      "whiplash": {
+        synopsis: "A ambição de um jovem músico colide com os métodos extremos de um renomado maestro de jazz.",
+        streaming: ["Prime Video", "Telecine", "Apple TV (aluguel)"]
+      },
+      "clube-da-luta": {
+        synopsis: "Um narrador desiludido cria, com Tyler Durden, um clube secreto que vira um movimento perigoso.",
+        streaming: ["Star+", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+      },
+      "coco": {
+        synopsis: "No Dia dos Mortos, Miguel atravessa para o além e desvenda a história de sua família.",
+        streaming: ["Disney+", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+      }
+    };
+
+    const streamingLogos = {
+      "Max": "https://logo.clearbit.com/max.com",
+      "Prime Video": "https://logo.clearbit.com/primevideo.com",
+      "Apple TV": "https://logo.clearbit.com/apple.com",
+      "Netflix": "https://logo.clearbit.com/netflix.com",
+      "Telecine": "https://logo.clearbit.com/telecine.com.br",
+      "Google Play": "https://logo.clearbit.com/play.google.com",
+      "Star+": "https://logo.clearbit.com/starplus.com",
+      "Disney+": "https://logo.clearbit.com/disneyplus.com"
+    };
+
+    const genreFilter = document.getElementById("genre-filter");
+    const moviesGrid = document.getElementById("movies-grid");
+    const movieCards = Array.from(document.querySelectorAll(".card"));
+    const movieLinks = Array.from(document.querySelectorAll(".movie-link"));
+    const emptyState = document.getElementById("empty-state");
+    const pageHeader = document.querySelector("header");
+    const filterBar = document.querySelector(".filter-bar");
+    const moviesNav = document.querySelector(".movies-nav");
+    const movieDetail = document.getElementById("movie-detail");
+    const backToListBtn = document.getElementById("back-to-list");
+    const detailPoster = document.getElementById("detail-poster");
+    const detailTitle = document.getElementById("detail-title");
+    const detailGenre = document.getElementById("detail-genre");
+    const detailSynopsis = document.getElementById("detail-synopsis");
+    const detailStreaming = document.getElementById("detail-streaming");
+    const scrollLeftBtn = document.getElementById("scroll-left");
+    const scrollRightBtn = document.getElementById("scroll-right");
+
+    genreFilter.addEventListener("change", function () {
+      const selectedGenre = genreFilter.value;
+      let visibleCount = 0;
+
+      movieCards.forEach(function (card) {
+        const genres = (card.dataset.genres || "").split(",");
+        const isVisible = selectedGenre === "todos" || genres.includes(selectedGenre);
+        card.style.display = isVisible ? "" : "none";
+        if (isVisible) visibleCount += 1;
+      });
+
+      emptyState.style.display = visibleCount === 0 ? "block" : "none";
+    });
+
+    movieLinks.forEach(function (link) {
+      link.addEventListener("click", function (event) {
+        event.preventDefault();
+        const movieId = link.dataset.movieId;
+        const info = movieData[movieId];
+        if (!info) return;
+
+        const poster = link.querySelector(".poster");
+        const title = link.querySelector(".title").textContent;
+        const genre = link.querySelector(".genre").textContent;
+
+        detailPoster.src = poster.src;
+        detailPoster.alt = poster.alt;
+        detailTitle.textContent = title;
+        detailGenre.textContent = genre;
+        detailSynopsis.textContent = info.synopsis;
+        detailStreaming.innerHTML = "";
+
+        info.streaming.forEach(function (service) {
+          const item = document.createElement("li");
+          const serviceBaseName = service.split(" (")[0];
+          const logoSrc = streamingLogos[serviceBaseName];
+
+          if (logoSrc) {
+            const logo = document.createElement("img");
+            logo.className = "service-logo";
+            logo.src = logoSrc;
+            logo.alt = "Logo " + serviceBaseName;
+            logo.loading = "lazy";
+            item.appendChild(logo);
+          }
+
+          const label = document.createElement("span");
+          label.textContent = service;
+          item.appendChild(label);
+          detailStreaming.appendChild(item);
+        });
+
+        pageHeader.style.display = "none";
+        filterBar.style.display = "none";
+        moviesNav.style.display = "none";
+        emptyState.style.display = "none";
+        movieDetail.hidden = false;
+      });
+    });
+
+    backToListBtn.addEventListener("click", function () {
+      pageHeader.style.display = "";
+      filterBar.style.display = "";
+      moviesNav.style.display = "";
+      movieDetail.hidden = true;
+      genreFilter.dispatchEvent(new Event("change"));
+    });
+
+    scrollLeftBtn.addEventListener("click", function () {
+      moviesGrid.scrollBy({ left: -420, behavior: "smooth" });
+    });
+
+    scrollRightBtn.addEventListener("click", function () {
+      moviesGrid.scrollBy({ left: 420, behavior: "smooth" });
+    });
+  </script>
+</body>
+</html>
