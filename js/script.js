@@ -353,7 +353,7 @@ function titleToId(value) {
 function createPosterForTitle(title) {
   const words = title.split(" ").filter(Boolean);
   const initials = words.slice(0, 2).map((word) => word[0]).join("").toUpperCase() || "FM";
-  return "https://placehold.co/400x600/1f2937/e5e7eb?text=" + encodeURIComponent(initials);
+  return makeLogoDataUri(initials, "#1f2937");
 }
 
 function parseMovieLines(text) {
