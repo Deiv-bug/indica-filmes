@@ -396,11 +396,16 @@ function createPosterFallback(title) {
 function attachPosterFallback(img, title) {
   const fallbackSrc = createPosterFallback(title);
   img.dataset.fallbackSrc = fallbackSrc;
-  img.addEventListener("error", () => {
+  const applyFallback = () => {
     if (img.src !== fallbackSrc) {
       img.src = fallbackSrc;
     }
-  });
+  };
+  img.addEventListener("error", applyFallback);
+  // If the image has already failed before the listener was attached, recover immediately.
+  if (img.complete && img.naturalWidth === 0) {
+    applyFallback();
+  }
 }
 
 function parseMovieLines(text) {
@@ -536,6 +541,29 @@ const manualRatings = {
   "cloverfield": "7.0"
 };
 
+const manualStreaming = {
+  "o jogo da imitacao": ["Prime Video", "Apple TV (aluguel)"],
+  "diario de um banana": ["Disney+", "Apple TV (aluguel)"],
+  "brilho eterno de uma mente sem lembranca": ["Prime Video", "Apple TV (aluguel)"],
+  "de volta ao futuro": ["Prime Video", "Apple TV (aluguel)"],
+  "bastardos inglorios": ["Prime Video", "Apple TV (aluguel)"],
+  "duna": ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+  "seven": ["Max", "Prime Video (aluguel)"],
+  "covil dos ladroes": ["Prime Video", "Apple TV (aluguel)"],
+  "john wick": ["Prime Video", "Apple TV (aluguel)"],
+  "uncharted": ["Netflix", "Prime Video (aluguel)"],
+  "o iluminado": ["Max", "Prime Video (aluguel)"],
+  "blade runner 2049": ["Netflix", "Prime Video (aluguel)"],
+  "ilha do medo": ["Paramount+", "Apple TV (aluguel)"],
+  "deadpool": ["Disney+", "Prime Video (aluguel)"],
+  "avatar": ["Disney+", "Prime Video (aluguel)"],
+  "guerra mundial z": ["Paramount+", "Prime Video (aluguel)"],
+  "clube da luta": ["Star+", "Prime Video (aluguel)"],
+  "v de vinganca": ["Max", "Prime Video (aluguel)"],
+  "troia": ["Prime Video", "Apple TV (aluguel)"],
+  "constantine": ["Max", "Prime Video (aluguel)"]
+};
+
 function resolveRating(title, genres) {
   const normalized = normalizeTitle(title);
   if (manualRatings[normalized]) return manualRatings[normalized];
@@ -545,6 +573,18 @@ function resolveRating(title, genres) {
   if (genres.includes("romance")) return "7.0";
   if (genres.includes("comedia")) return "6.9";
   return "7.2";
+}
+
+function resolveStreaming(title, genres) {
+  const normalized = normalizeTitle(title);
+  if (manualStreaming[normalized]) return manualStreaming[normalized];
+  if (genres.includes("terror")) return ["Prime Video", "Apple TV (aluguel)"];
+  if (genres.includes("ficcao-cientifica")) return ["Netflix", "Prime Video (aluguel)"];
+  if (genres.includes("acao")) return ["Prime Video", "Apple TV (aluguel)"];
+  if (genres.includes("romance")) return ["Netflix", "Prime Video"];
+  if (genres.includes("animacao")) return ["Disney+", "Prime Video"];
+  if (genres.includes("drama")) return ["Prime Video", "Apple TV (aluguel)"];
+  return ["Não informado"];
 }
 
 const manualGenreOverrides = {
@@ -888,11 +928,12 @@ function addBulkMovies() {
 
       const synopsis = buildAutoSynopsis(title, genreText, genres);
       const rating = resolveRating(title, genres);
+      const streaming = resolveStreaming(title, genres);
 
       movieData[movieId] = {
         synopsis: synopsis,
         rating: rating,
-        streaming: ["Não informado"]
+        streaming: streaming
       };
 
       const card = document.createElement("a");
