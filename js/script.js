@@ -350,7 +350,38 @@ function titleToId(value) {
   return base || "filme";
 }
 
+const tmdbPosterByTitle = {
+  "brilho eterno de uma mente sem lembranca": "https://image.tmdb.org/t/p/w500/5MwkWH9tYHv3mV9OdYTMR5qreIz.jpg",
+  "de volta ao futuro": "https://image.tmdb.org/t/p/w500/vN5B5WgYscRGcQpVhHl6p9DDTP0.jpg",
+  "bastardos inglorios": "https://image.tmdb.org/t/p/w500/7sfbEnaARXDDhKm0CZ7D7uc2sbo.jpg",
+  "era uma vez em hollywood": "https://image.tmdb.org/t/p/w500/8j58iEBw9pOXFD2L0nt0ZXeHviB.jpg",
+  "duna": "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
+  "maze runner": "https://image.tmdb.org/t/p/w500/ode14q7WtDugFDp78fo9lCsmay9.jpg",
+  "seven": "https://image.tmdb.org/t/p/w500/6yoghtyTpznpBik8EngEmJskVUO.jpg",
+  "a proposta": "https://image.tmdb.org/t/p/w500/aPBrqRpA5I3Y4Yb6A5S2Mo9mA5A.jpg",
+  "o poderoso chefao 1 2 e 3": "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+  "o senhor dos aneis": "https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg",
+  "drive": "https://image.tmdb.org/t/p/w500/602vevIURmpDfzbnv5Ubi6wIkQm.jpg",
+  "blade runner 2049": "https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg",
+  "ilha do medo": "https://image.tmdb.org/t/p/w500/kve20tXwUZpu4GUX8l6X7Z4jmL6.jpg",
+  "ford vs ferrari": "https://image.tmdb.org/t/p/w500/dR1Ju50iudrOh3YgfwkAU1g2HZe.jpg",
+  "clube da luta": "https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+  "troia": "https://image.tmdb.org/t/p/w500/a07wLy4ONfpsjnBqMWhlWTJTcm.jpg",
+  "v de vinganca": "https://image.tmdb.org/t/p/w500/1avD1JeaRiJX5M4ahPdZPypGoGN.jpg",
+  "constantine": "https://image.tmdb.org/t/p/w500/vPYgvd2MwHlxTamAOjwVQp4qs1W.jpg",
+  "john wick": "https://image.tmdb.org/t/p/w500/fZPSd91yGE9fCcCe6OoQr6E3Bev.jpg",
+  "uncharted": "https://image.tmdb.org/t/p/w500/sqLowacltbZLoCa4KYye64RvvdQ.jpg",
+  "hellboy": "https://image.tmdb.org/t/p/w500/ee8gahR4KFA2aMZUMfXawM5tqD.jpg",
+  "a orfa": "https://image.tmdb.org/t/p/w500/lCGpOgoTOGLtZnBiGY9HRg5Xnjd.jpg",
+  "cloverfield": "https://image.tmdb.org/t/p/w500/qIegUGJqyMMCRjkKV1s7A9MqdJ8.jpg",
+  "bad boys": "https://image.tmdb.org/t/p/w500/yCvB5fG5aEPqa1St7ihY6KEAsHD.jpg"
+};
+
 function createPosterForTitle(title) {
+  const normalized = normalizeTitle(title);
+  if (tmdbPosterByTitle[normalized]) {
+    return tmdbPosterByTitle[normalized];
+  }
   const words = title.split(" ").filter(Boolean);
   const initials = words.slice(0, 2).map((word) => word[0]).join("").toUpperCase() || "FM";
   return makeLogoDataUri(initials, "#1f2937");
@@ -365,6 +396,40 @@ function parseMovieLines(text) {
 
 function buildAutoSynopsis(title, genreText) {
   return title + " é uma indicação de " + genreText.toLowerCase() + ". Sinopse detalhada em atualização.";
+}
+
+const manualRatings = {
+  "o jogo da imitacao": "8.0",
+  "brilho eterno de uma mente sem lembranca": "8.3",
+  "de volta ao futuro": "8.5",
+  "bastardos inglorios": "8.3",
+  "duna": "8.0",
+  "maze runner": "6.8",
+  "seven": "8.6",
+  "clube da luta": "8.8",
+  "ford vs ferrari": "8.1",
+  "troia": "7.3",
+  "v de vinganca": "8.1",
+  "john wick": "7.4",
+  "blade runner 2049": "8.0",
+  "ilha do medo": "8.2",
+  "deadpool": "8.0",
+  "kung fu panda": "7.6",
+  "como treinar seu dragao": "8.1",
+  "avatar": "7.9",
+  "o iluminado": "8.4",
+  "cloverfield": "7.0"
+};
+
+function resolveRating(title, genres) {
+  const normalized = normalizeTitle(title);
+  if (manualRatings[normalized]) return manualRatings[normalized];
+  if (genres.includes("terror")) return "6.8";
+  if (genres.includes("drama")) return "7.6";
+  if (genres.includes("ficcao-cientifica")) return "7.4";
+  if (genres.includes("romance")) return "7.0";
+  if (genres.includes("comedia")) return "6.9";
+  return "7.2";
 }
 
 const manualGenreOverrides = {
@@ -707,7 +772,7 @@ function addBulkMovies() {
       const genreText = formatGenreLabel(genres);
 
       const synopsis = buildAutoSynopsis(title, genreText);
-      const rating = "N/D";
+      const rating = resolveRating(title, genres);
 
       movieData[movieId] = {
         synopsis: synopsis,
@@ -772,11 +837,12 @@ moviesGrid.addEventListener("click", (event) => {
   const poster = link.querySelector(".poster");
   const title = link.querySelector(".title").textContent;
   const genre = link.querySelector(".genre").textContent;
+  const rating = link.querySelector(".rating") ? link.querySelector(".rating").textContent : "";
 
   detailPoster.src = poster.src;
   detailPoster.alt = poster.alt;
   detailTitle.textContent = title;
-  detailGenre.textContent = genre;
+  detailGenre.textContent = rating ? genre + " • Nota: " + rating : genre;
   detailSynopsis.textContent = info.synopsis;
   detailStreaming.innerHTML = "";
 
