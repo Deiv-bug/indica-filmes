@@ -387,6 +387,22 @@ function createPosterForTitle(title) {
   return makeLogoDataUri(initials, "#1f2937");
 }
 
+function createPosterFallback(title) {
+  const words = title.split(" ").filter(Boolean);
+  const initials = words.slice(0, 2).map((word) => word[0]).join("").toUpperCase() || "FM";
+  return makeLogoDataUri(initials, "#1f2937");
+}
+
+function attachPosterFallback(img, title) {
+  const fallbackSrc = createPosterFallback(title);
+  img.dataset.fallbackSrc = fallbackSrc;
+  img.addEventListener("error", () => {
+    if (img.src !== fallbackSrc) {
+      img.src = fallbackSrc;
+    }
+  });
+}
+
 function parseMovieLines(text) {
   return text
     .split("\n")
@@ -394,8 +410,107 @@ function parseMovieLines(text) {
     .filter((line) => line.length > 0);
 }
 
-function buildAutoSynopsis(title, genreText) {
-  return title + " é uma indicação de " + genreText.toLowerCase() + ". Sinopse detalhada em atualização.";
+const manualSynopses = {
+  "o jogo da imitacao": "Durante a Segunda Guerra, Alan Turing lidera uma equipe para decifrar o código Enigma e mudar o rumo do conflito.",
+  "diario de um banana": "Greg Heffley tenta sobreviver aos desafios da escola e da família, sempre se metendo em situações constrangedoras.",
+  "brilho eterno de uma mente sem lembranca": "Após um término doloroso, um casal apaga memórias um do outro, mas descobre que alguns sentimentos resistem.",
+  "de volta ao futuro": "Marty viaja para o passado em um DeLorean e precisa consertar a linha do tempo para voltar ao presente.",
+  "preco do amanha": "Em um futuro onde tempo é dinheiro, um homem entra em confronto com o sistema para mudar as regras.",
+  "no limite do amanha": "Um soldado revive o mesmo dia de batalha contra alienígenas até aprender como vencer a guerra.",
+  "bastardos inglorios": "Um grupo de soldados judeus executa missões brutais contra nazistas na França ocupada.",
+  "efeito borboleta": "Ao revisitar o passado, um jovem altera eventos de sua vida e enfrenta consequências cada vez mais graves.",
+  "era uma vez em hollywood": "Um ator em decadência e seu dublê buscam espaço em uma Hollywood em transformação no fim dos anos 60.",
+  "duna": "Paul Atreides precisa assumir seu destino em Arrakis, planeta estratégico marcado por conflitos políticos e religiosos.",
+  "a vida secreta de walter mitty": "Um homem comum sai da rotina e embarca em uma jornada global para encontrar um negativo desaparecido.",
+  "rush no limite da emocao": "A rivalidade entre James Hunt e Niki Lauda redefine os limites da Fórmula 1.",
+  "o codigo da vinci": "Um professor e uma criptógrafa seguem pistas históricas para desvendar um segredo protegido por séculos.",
+  "warcraft o primeiro encontro de dois mundos": "Humanos e orcs entram em guerra quando um portal liga dois mundos em crise.",
+  "a origem dos guardioes": "Heróis lendários se unem para impedir uma ameaça que quer destruir a esperança das crianças.",
+  "pressagio": "Um professor descobre previsões catastróficas em uma cápsula do tempo e tenta impedir novos desastres.",
+  "eurotrip": "Após uma decepção amorosa, um grupo de amigos cruza a Europa em uma viagem caótica e engraçada.",
+  "advogado do diabo": "Um advogado promissor aceita um trabalho em Nova York e percebe que seu novo chefe é extremamente perigoso.",
+  "a torre negra": "Um pistoleiro persegue o Homem de Preto para proteger a Torre que sustenta todos os mundos.",
+  "as cronicas de narnia": "Quatro irmãos entram em um mundo mágico e lideram a resistência contra uma rainha tirana.",
+  "ultimo samurai": "Um capitão americano é capturado por samurais e passa a questionar seus valores durante a modernização do Japão.",
+  "maze runner": "Presos em um labirinto mortal, jovens tentam escapar e descobrir quem os colocou ali.",
+  "seven": "Dois detetives investigam assassinatos ligados aos sete pecados capitais.",
+  "covil dos ladroes": "Um detetive obcecado persegue uma quadrilha que planeja um grande assalto em Los Angeles.",
+  "poder sem limites": "Três adolescentes ganham habilidades telecinéticas e veem suas relações desmoronarem com o poder.",
+  "donnie darko viagem no tempo": "Após escapar de um acidente estranho, um adolescente passa a ter visões perturbadoras sobre o tempo.",
+  "busca implacavel": "Um ex-agente usa suas habilidades para resgatar a filha sequestrada na Europa.",
+  "o poderoso chefao 1 2 e 3": "A saga da família Corleone mostra ascensão, poder e conflitos no coração da máfia italiana.",
+  "drive": "Um piloto dublê envolvido com o crime tenta proteger uma mulher e seu filho de criminosos violentos.",
+  "blade runner 2049": "Um novo blade runner descobre um segredo que pode mudar a relação entre humanos e replicantes.",
+  "ilha do medo": "Um agente federal investiga o desaparecimento de uma paciente em um hospital psiquiátrico isolado.",
+  "john wick": "Um assassino aposentado volta à ativa após perder aquilo que mais amava.",
+  "uncharted": "Um caçador de tesouros e seu mentor seguem pistas históricas em busca de uma fortuna perdida.",
+  "o iluminado": "Isolado em um hotel durante o inverno, um escritor é consumido por forças sombrias e pela própria loucura.",
+  "clube da luta": "Um homem desiludido cria com um estranho carismático um clube secreto que se transforma em algo maior.",
+  "v de vinganca": "Em um regime autoritário, um vigilante mascarado inspira uma revolução popular.",
+  "troia": "A guerra entre gregos e troianos explode após o rapto de Helena, com heróis buscando glória e vingança.",
+  "constantine": "Um investigador do oculto enfrenta demônios e conspirações para impedir um cataclismo sobrenatural.",
+  "avatar": "Em Pandora, um ex-fuzileiro divide-se entre ordens militares e a defesa do povo Na'vi.",
+  "guerra mundial z": "Um ex-investigador da ONU viaja pelo mundo para tentar conter uma pandemia zumbi.",
+  "o homem nas trevas": "Jovens ladrões invadem a casa de um homem cego e descobrem que se tornaram as verdadeiras presas.",
+  "o regresso": "Após ser deixado para morrer, um caçador ferido atravessa territórios hostis em busca de sobrevivência e vingança."
+};
+
+function hashTitle(value) {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) % 9973;
+  }
+  return hash;
+}
+
+function buildAutoSynopsis(title, genreText, genres) {
+  const normalized = normalizeTitle(title);
+  if (manualSynopses[normalized]) return manualSynopses[normalized];
+
+  const primaryGenre = (genres && genres[0]) || "outros";
+  const templates = {
+    "acao": [
+      title + " acompanha uma missão arriscada que coloca o protagonista contra inimigos poderosos.",
+      "Com perseguições e confrontos intensos, " + title + " mostra uma corrida contra o tempo."
+    ],
+    "ficcao-cientifica": [
+      title + " explora um cenário futurista em que tecnologia e escolhas humanas mudam tudo.",
+      "Em " + title + ", uma ameaça incomum desafia os personagens em um mundo além do convencional."
+    ],
+    "romance": [
+      title + " acompanha personagens que tentam equilibrar sentimentos, escolhas difíceis e recomeços.",
+      "Entre encontros e conflitos, " + title + " retrata uma história de amor com altos e baixos."
+    ],
+    "drama": [
+      title + " foca em dilemas pessoais e consequências que transformam a vida dos personagens.",
+      "Em " + title + ", decisões difíceis colocam relações e valores à prova."
+    ],
+    "terror": [
+      title + " apresenta uma sequência de eventos inquietantes em que o perigo cresce a cada cena.",
+      "Com clima sombrio, " + title + " leva os personagens a enfrentar medo e sobrevivência."
+    ],
+    "suspense": [
+      title + " constrói mistérios e reviravoltas que mantêm a tensão até o final.",
+      "Segredos e ameaças ocultas conduzem a trama de " + title + " em ritmo crescente."
+    ],
+    "fantasia": [
+      title + " se passa em um universo extraordinário marcado por forças mágicas e conflitos épicos.",
+      "Em " + title + ", heróis improváveis enfrentam desafios em um mundo fantástico."
+    ],
+    "animacao": [
+      title + " traz uma aventura animada com humor, emoção e personagens cativantes.",
+      "Com visual marcante, " + title + " acompanha uma jornada cheia de descobertas."
+    ],
+    "comedia": [
+      title + " aposta em situações inesperadas e confusões para entregar humor do começo ao fim.",
+      "Entre mal-entendidos e exageros, " + title + " desenvolve uma comédia leve e divertida."
+    ]
+  };
+
+  const selected = templates[primaryGenre] || [
+    title + " é uma indicação de " + genreText.toLowerCase() + " com foco em entretenimento e boa narrativa."
+  ];
+  return selected[hashTitle(normalized) % selected.length];
 }
 
 const manualRatings = {
@@ -771,7 +886,7 @@ function addBulkMovies() {
       const genres = group.genreValue === "terror" ? ["terror"] : classifyGeneralMovie(title);
       const genreText = formatGenreLabel(genres);
 
-      const synopsis = buildAutoSynopsis(title, genreText);
+      const synopsis = buildAutoSynopsis(title, genreText, genres);
       const rating = resolveRating(title, genres);
 
       movieData[movieId] = {
@@ -799,11 +914,21 @@ function addBulkMovies() {
         '</div>';
 
       moviesGrid.appendChild(card);
+      const cardPoster = card.querySelector(".poster");
+      if (cardPoster) attachPosterFallback(cardPoster, title);
     });
   });
 }
 
 addBulkMovies();
+
+Array.from(document.querySelectorAll(".card")).forEach((card) => {
+  const titleNode = card.querySelector(".title");
+  const posterNode = card.querySelector(".poster");
+  if (titleNode && posterNode) {
+    attachPosterFallback(posterNode, titleNode.textContent);
+  }
+});
 
 function getMovieCards() {
   return Array.from(document.querySelectorAll(".card"));
