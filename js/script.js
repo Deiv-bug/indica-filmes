@@ -353,7 +353,7 @@ function titleToId(value) {
 function createPosterForTitle(title) {
   const words = title.split(" ").filter(Boolean);
   const initials = words.slice(0, 2).map((word) => word[0]).join("").toUpperCase() || "FM";
-  return makeLogoDataUri(initials, "#1f2937");
+  return "https://placehold.co/400x600/1f2937/e5e7eb?text=" + encodeURIComponent(initials);
 }
 
 function parseMovieLines(text) {
@@ -361,6 +361,10 @@ function parseMovieLines(text) {
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
+}
+
+function buildAutoSynopsis(title, genreText) {
+  return title + " é uma indicação de " + genreText.toLowerCase() + ". Sinopse detalhada em atualização.";
 }
 
 const manualGenreOverrides = {
@@ -702,8 +706,12 @@ function addBulkMovies() {
       const genres = group.genreValue === "terror" ? ["terror"] : classifyGeneralMovie(title);
       const genreText = formatGenreLabel(genres);
 
+      const synopsis = buildAutoSynopsis(title, genreText);
+      const rating = "N/D";
+
       movieData[movieId] = {
-        synopsis: "Sinopse em atualização.",
+        synopsis: synopsis,
+        rating: rating,
         streaming: ["Não informado"]
       };
 
@@ -719,10 +727,10 @@ function addBulkMovies() {
         '<div class="content">' +
           '<div class="title-row">' +
             '<h2 class="title">' + title + '</h2>' +
-            '<span class="rating">-</span>' +
+            '<span class="rating">' + rating + '</span>' +
           '</div>' +
           '<p class="genre">' + genreText + '</p>' +
-          '<p class="desc">Indicação adicionada por você.</p>' +
+          '<p class="desc">' + synopsis + '</p>' +
         '</div>';
 
       moviesGrid.appendChild(card);
