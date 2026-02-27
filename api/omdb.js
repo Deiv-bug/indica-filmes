@@ -8,6 +8,7 @@ module.exports = async function handler(req, res) {
 
   const apiKey = process.env.OMDB_API_KEY;
   const title = (req.query && req.query.title ? String(req.query.title) : "").trim();
+  const search = (req.query && req.query.search ? String(req.query.search) : "").trim();
 
   if (!apiKey) {
     res.statusCode = 500;
@@ -15,13 +16,15 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (!title) {
+  if (!title && !search) {
     res.statusCode = 400;
-    res.end(JSON.stringify({ error: "Missing title" }));
+    res.end(JSON.stringify({ error: "Missing title or search" }));
     return;
   }
 
-  const url = "https://www.omdbapi.com/?apikey=" + encodeURIComponent(apiKey) + "&plot=short&t=" + encodeURIComponent(title);
+  const url = title
+    ? "https://www.omdbapi.com/?apikey=" + encodeURIComponent(apiKey) + "&plot=short&t=" + encodeURIComponent(title)
+    : "https://www.omdbapi.com/?apikey=" + encodeURIComponent(apiKey) + "&s=" + encodeURIComponent(search);
 
   try {
     const response = await fetch(url);
@@ -37,6 +40,20 @@ module.exports = async function handler(req, res) {
     if (data.Response !== "True") {
       res.statusCode = 404;
       res.end(JSON.stringify({ error: data.Error || "Movie not found" }));
+      return;
+    }
+
+    if (search) {
+      const results = Array.isArray(data.Search)
+        ? data.Search.map((item) => ({
+            title: item.Title || null,
+            year: item.Year || null,
+            imdbID: item.imdbID || null,
+            type: item.Type || null
+          }))
+        : [];
+      res.statusCode = 200;
+      res.end(JSON.stringify({ results: results }));
       return;
     }
 

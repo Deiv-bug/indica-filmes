@@ -517,6 +517,46 @@ function getOmdbQueryTitle(title) {
   return omdbTitleAliases[normalized] || title;
 }
 
+function buildOmdbTitleCandidates(title) {
+  const base = getOmdbQueryTitle(title);
+  const normalized = normalizeTitle(base);
+  const cleaned = base
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/[:\-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const noAccents = normalized.replace(/\s+/g, " ").trim();
+  const short = cleaned.split(" ").slice(0, 4).join(" ").trim();
+
+  return Array.from(
+    new Set([base, cleaned, noAccents, short].filter((candidate) => candidate && candidate.length > 2))
+  );
+}
+
+async function fetchOmdbByTitleCandidate(candidate) {
+  const url = OMDB_BASE_URL + "?title=" + encodeURIComponent(candidate);
+  const response = await fetch(url);
+  if (!response.ok) return null;
+  const data = await response.json();
+  if (!data || data.error) return null;
+  const rating = data.imdbRating || null;
+  const synopsis = data.plot || null;
+  if (!rating && !synopsis) return null;
+  return { rating, synopsis };
+}
+
+async function fetchOmdbBySearch(title) {
+  const url = OMDB_BASE_URL + "?search=" + encodeURIComponent(title);
+  const response = await fetch(url);
+  if (!response.ok) return null;
+  const data = await response.json();
+  if (!data || !Array.isArray(data.results) || data.results.length === 0) return null;
+
+  const bestMatch = data.results[0];
+  if (!bestMatch || !bestMatch.title) return null;
+  return fetchOmdbByTitleCandidate(bestMatch.title);
+}
+
 function shouldFetchRealData(card, info) {
   if (!info) return false;
   const ratingText = card.querySelector(".rating") ? card.querySelector(".rating").textContent.trim() : "";
@@ -529,17 +569,19 @@ function shouldFetchRealData(card, info) {
 }
 
 async function fetchOmdbData(title) {
-  const queryTitle = getOmdbQueryTitle(title);
-  const url = OMDB_BASE_URL + "?title=" + encodeURIComponent(queryTitle);
-
   try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const data = await response.json();
-    const rating = data.imdbRating || null;
-    const synopsis = data.plot || null;
-    if (!rating && !synopsis) return null;
-    return { rating, synopsis };
+    const candidates = buildOmdbTitleCandidates(title);
+
+    for (const candidate of candidates) {
+      const result = await fetchOmdbByTitleCandidate(candidate);
+      if (result) return result;
+    }
+
+    // Last resort: OMDb search route and then detailed fetch.
+    const searchResult = await fetchOmdbBySearch(candidates[0] || title);
+    if (searchResult) return searchResult;
+
+    return null;
   } catch (_error) {
     return null;
   }
@@ -998,6 +1040,7 @@ function classifyGeneralMovie(title) {
 }
 
 const genreFilter = document.getElementById("genre-filter");
+const movieSearch = document.getElementById("movie-search");
 const moviesGrid = document.getElementById("movies-grid");
 const emptyState = document.getElementById("empty-state");
 const pageHeader = document.querySelector("header");
@@ -1115,11 +1158,16 @@ function getMovieCards() {
 
 function applyGenreFilter() {
   const selectedGenre = genreFilter.value;
+  const searchTerm = normalizeTitle(movieSearch ? movieSearch.value : "");
   let visibleCount = 0;
 
   getMovieCards().forEach((card) => {
     const genres = (card.dataset.genres || "").split(",");
-    const isVisible = selectedGenre === "todos" || genres.includes(selectedGenre);
+    const titleNode = card.querySelector(".title");
+    const cardTitle = titleNode ? normalizeTitle(titleNode.textContent) : "";
+    const matchesGenre = selectedGenre === "todos" || genres.includes(selectedGenre);
+    const matchesSearch = !searchTerm || cardTitle.includes(searchTerm);
+    const isVisible = matchesGenre && matchesSearch;
     card.style.display = isVisible ? "" : "none";
     if (isVisible) visibleCount += 1;
   });
@@ -1128,6 +1176,7 @@ function applyGenreFilter() {
 }
 
 genreFilter.addEventListener("change", applyGenreFilter);
+if (movieSearch) movieSearch.addEventListener("input", applyGenreFilter);
 
 moviesGrid.addEventListener("click", (event) => {
   const link = event.target.closest(".movie-link");
