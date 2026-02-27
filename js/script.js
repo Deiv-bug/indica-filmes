@@ -895,12 +895,13 @@ const detailStreaming = document.getElementById("detail-streaming");
 const scrollLeftBtn = document.getElementById("scroll-left");
 const scrollRightBtn = document.getElementById("scroll-right");
 
-function addBulkMovies() {
+function buildBulkMoviesData() {
   const existingNormalizedTitles = new Set(
     Array.from(document.querySelectorAll(".card .title")).map((titleNode) => normalizeTitle(titleNode.textContent))
   );
   const addedTitles = new Set();
   const usedIds = new Set(Object.keys(movieData));
+  const bulkMoviesData = {};
 
   const groups = [
     { lines: parseMovieLines(bulkGeneralMoviesText), genreValue: "outros", genreLabel: "Outros" },
@@ -930,34 +931,53 @@ function addBulkMovies() {
       const rating = resolveRating(title, genres);
       const streaming = resolveStreaming(title, genres);
 
-      movieData[movieId] = {
+      bulkMoviesData[movieId] = {
+        title: title,
+        genres: genres,
+        genreText: genreText,
         synopsis: synopsis,
         rating: rating,
-        streaming: streaming
+        streaming: streaming,
+        poster: createPosterForTitle(title)
       };
-
-      const card = document.createElement("a");
-      card.className = "card movie-link";
-      card.dataset.movieId = movieId;
-      card.dataset.genres = genres.join(",");
-      card.href = "#";
-      card.setAttribute("aria-label", "Saber mais sobre " + title);
-
-      card.innerHTML =
-        '<img class="poster" src="' + createPosterForTitle(title) + '" alt="Cartaz do filme ' + title + '" />' +
-        '<div class="content">' +
-          '<div class="title-row">' +
-            '<h2 class="title">' + title + '</h2>' +
-            '<span class="rating">' + rating + '</span>' +
-          '</div>' +
-          '<p class="genre">' + genreText + '</p>' +
-          '<p class="desc">' + synopsis + '</p>' +
-        '</div>';
-
-      moviesGrid.appendChild(card);
-      const cardPoster = card.querySelector(".poster");
-      if (cardPoster) attachPosterFallback(cardPoster, title);
     });
+  });
+
+  return bulkMoviesData;
+}
+
+function addBulkMovies() {
+  const bulkMoviesData = buildBulkMoviesData();
+
+  Object.entries(bulkMoviesData).forEach(([movieId, info]) => {
+    // Keep all movies in the same data structure as the initial movieData entries.
+    movieData[movieId] = {
+      synopsis: info.synopsis,
+      rating: info.rating,
+      streaming: info.streaming
+    };
+
+    const card = document.createElement("a");
+    card.className = "card movie-link";
+    card.dataset.movieId = movieId;
+    card.dataset.genres = info.genres.join(",");
+    card.href = "#";
+    card.setAttribute("aria-label", "Saber mais sobre " + info.title);
+
+    card.innerHTML =
+      '<img class="poster" src="' + info.poster + '" alt="Cartaz do filme ' + info.title + '" />' +
+      '<div class="content">' +
+        '<div class="title-row">' +
+          '<h2 class="title">' + info.title + '</h2>' +
+          '<span class="rating">' + info.rating + '</span>' +
+        '</div>' +
+        '<p class="genre">' + info.genreText + '</p>' +
+        '<p class="desc">' + info.synopsis + '</p>' +
+      '</div>';
+
+    moviesGrid.appendChild(card);
+    const cardPoster = card.querySelector(".poster");
+    if (cardPoster) attachPosterFallback(cardPoster, info.title);
   });
 }
 
