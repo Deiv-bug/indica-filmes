@@ -49,6 +49,34 @@ const movieData = {
   }
 };
 
+// Cole sua chave OMDb aqui para carregar sinopses e notas reais automaticamente.
+const OMDB_API_KEY = "";
+const OMDB_BASE_URL = "https://www.omdbapi.com/";
+const OMDB_CACHE_KEY = "omdb_cache_v1";
+
+const omdbTitleAliases = {
+  "o jogo da imitacao": "The Imitation Game",
+  "diario de um banana": "Diary of a Wimpy Kid",
+  "brilho eterno de uma mente sem lembranca": "Eternal Sunshine of the Spotless Mind",
+  "de volta ao futuro": "Back to the Future",
+  "bastardos inglorios": "Inglourious Basterds",
+  "era uma vez em hollywood": "Once Upon a Time in Hollywood",
+  "a origem dos guardioes": "Rise of the Guardians",
+  "no limite do amanha": "Edge of Tomorrow",
+  "preco do amanha": "In Time",
+  "ilha do medo": "Shutter Island",
+  "clube da luta": "Fight Club",
+  "o iluminado": "The Shining",
+  "v de vinganca": "V for Vendetta",
+  "troia": "Troy",
+  "o regresso": "The Revenant",
+  "a chegada": "Arrival",
+  "a mumia": "The Mummy",
+  "o livro de eli": "The Book of Eli",
+  "o homem nas trevas": "Don't Breathe",
+  "as cronicas de narnia": "The Chronicles of Narnia: The Lion, the Witch and the Wardrobe"
+};
+
 const bulkGeneralMoviesText = `
 O jogo da imitação
 Diário de um banana
@@ -466,6 +494,100 @@ function hashTitle(value) {
     hash = (hash * 31 + value.charCodeAt(i)) % 9973;
   }
   return hash;
+}
+
+function loadOmdbCache() {
+  try {
+    const raw = localStorage.getItem(OMDB_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (_error) {
+    return {};
+  }
+}
+
+function saveOmdbCache(cache) {
+  try {
+    localStorage.setItem(OMDB_CACHE_KEY, JSON.stringify(cache));
+  } catch (_error) {
+    // Ignore storage issues (private mode/quota).
+  }
+}
+
+function getOmdbQueryTitle(title) {
+  const normalized = normalizeTitle(title);
+  return omdbTitleAliases[normalized] || title;
+}
+
+function shouldFetchRealData(card, info) {
+  if (!info) return false;
+  const ratingText = card.querySelector(".rating") ? card.querySelector(".rating").textContent.trim() : "";
+  const synopsisText = (info.synopsis || "").toLowerCase();
+  return (
+    ratingText === "N/D" ||
+    synopsisText.includes("sinopse detalhada") ||
+    synopsisText.includes("é uma indicação de")
+  );
+}
+
+async function fetchOmdbData(title) {
+  if (!OMDB_API_KEY) return null;
+  const queryTitle = getOmdbQueryTitle(title);
+  const url = OMDB_BASE_URL + "?apikey=" + encodeURIComponent(OMDB_API_KEY) + "&plot=short&t=" + encodeURIComponent(queryTitle);
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (data.Response !== "True") return null;
+    const rating = data.imdbRating && data.imdbRating !== "N/A" ? data.imdbRating : null;
+    const synopsis = data.Plot && data.Plot !== "N/A" ? data.Plot : null;
+    if (!rating && !synopsis) return null;
+    return { rating, synopsis };
+  } catch (_error) {
+    return null;
+  }
+}
+
+function applyRealDataToCard(card, movieId, realData) {
+  const ratingNode = card.querySelector(".rating");
+  const descNode = card.querySelector(".desc");
+  if (realData.rating && ratingNode) ratingNode.textContent = realData.rating;
+  if (realData.synopsis && descNode) descNode.textContent = realData.synopsis;
+  if (!movieData[movieId]) movieData[movieId] = { streaming: ["Não informado"] };
+  if (realData.rating) movieData[movieId].rating = realData.rating;
+  if (realData.synopsis) movieData[movieId].synopsis = realData.synopsis;
+}
+
+async function enrichMoviesWithRealData() {
+  if (!OMDB_API_KEY) return;
+  const cache = loadOmdbCache();
+  const cards = Array.from(document.querySelectorAll(".movie-link"));
+
+  for (const card of cards) {
+    const movieId = card.dataset.movieId;
+    const info = movieData[movieId];
+    if (!movieId || !info || !shouldFetchRealData(card, info)) continue;
+
+    const titleNode = card.querySelector(".title");
+    if (!titleNode) continue;
+    const title = titleNode.textContent.trim();
+    const normalizedTitle = normalizeTitle(title);
+
+    if (cache[normalizedTitle]) {
+      applyRealDataToCard(card, movieId, cache[normalizedTitle]);
+      continue;
+    }
+
+    const realData = await fetchOmdbData(title);
+    if (realData) {
+      cache[normalizedTitle] = realData;
+      applyRealDataToCard(card, movieId, realData);
+      // Gentle pace to reduce API throttling risk.
+      await new Promise((resolve) => setTimeout(resolve, 120));
+    }
+  }
+
+  saveOmdbCache(cache);
 }
 
 function buildAutoSynopsis(title, genreText, genres) {
@@ -1074,3 +1196,4 @@ scrollRightBtn.addEventListener("click", () => {
 });
 
 applyGenreFilter();
+enrichMoviesWithRealData();
