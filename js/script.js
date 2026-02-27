@@ -49,9 +49,8 @@ const movieData = {
   }
 };
 
-// Cole sua chave OMDb aqui para carregar sinopses e notas reais automaticamente.
-const OMDB_API_KEY = "";
-const OMDB_BASE_URL = "https://www.omdbapi.com/";
+// Chave OMDb fica no servidor (Vercel env var: OMDB_API_KEY).
+const OMDB_BASE_URL = "/api/omdb";
 const OMDB_CACHE_KEY = "omdb_cache_v1";
 
 const omdbTitleAliases = {
@@ -530,17 +529,15 @@ function shouldFetchRealData(card, info) {
 }
 
 async function fetchOmdbData(title) {
-  if (!OMDB_API_KEY) return null;
   const queryTitle = getOmdbQueryTitle(title);
-  const url = OMDB_BASE_URL + "?apikey=" + encodeURIComponent(OMDB_API_KEY) + "&plot=short&t=" + encodeURIComponent(queryTitle);
+  const url = OMDB_BASE_URL + "?title=" + encodeURIComponent(queryTitle);
 
   try {
     const response = await fetch(url);
     if (!response.ok) return null;
     const data = await response.json();
-    if (data.Response !== "True") return null;
-    const rating = data.imdbRating && data.imdbRating !== "N/A" ? data.imdbRating : null;
-    const synopsis = data.Plot && data.Plot !== "N/A" ? data.Plot : null;
+    const rating = data.imdbRating || null;
+    const synopsis = data.plot || null;
     if (!rating && !synopsis) return null;
     return { rating, synopsis };
   } catch (_error) {
@@ -559,7 +556,6 @@ function applyRealDataToCard(card, movieId, realData) {
 }
 
 async function enrichMoviesWithRealData() {
-  if (!OMDB_API_KEY) return;
   const cache = loadOmdbCache();
   const cards = Array.from(document.querySelectorAll(".movie-link"));
 
