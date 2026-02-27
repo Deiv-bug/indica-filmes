@@ -1,53 +1,115 @@
-const movieData = {
+const initialMoviesCatalog = {
   "interestelar": {
+    title: "Interestelar",
+    genres: ["ficcao-cientifica"],
+    genreText: "Ficção científica",
     synopsis: "Um grupo de astronautas atravessa um buraco de minhoca para buscar um novo futuro para a humanidade.",
-    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+    rating: "8.6",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/nCbkOyOMTEwlEV0LtCOvCnwEONA.jpg"
   },
   "sociedade-do-anel": {
+    title: "A Sociedade do Anel",
+    genres: ["fantasia"],
+    genreText: "Fantasia",
     synopsis: "Frodo recebe a missão de destruir o Um Anel e impedir o avanço de Sauron sobre a Terra-média.",
-    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+    rating: "8.8",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg"
   },
   "corra": {
+    title: "Corra!",
+    genres: ["suspense"],
+    genreText: "Suspense",
     synopsis: "Um jovem visita a família da namorada e descobre segredos perturbadores por trás da aparente hospitalidade.",
-    streaming: ["Prime Video", "Telecine", "Apple TV (aluguel)"]
+    rating: "7.8",
+    streaming: ["Prime Video", "Telecine", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/tFXcEccSQMf3lfhfXKSU9iRBpa3.jpg"
   },
   "aranhaverso": {
+    title: "Aranhaverso",
+    genres: ["animacao", "acao"],
+    genreText: "Animação / Ação",
     synopsis: "Miles Morales encontra versões de outros universos do Homem-Aranha para impedir o colapso do multiverso.",
-    streaming: ["Netflix", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+    rating: "8.4",
+    streaming: ["Netflix", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg"
   },
   "parasita": {
+    title: "Parasita",
+    genres: ["drama", "suspense"],
+    genreText: "Drama / Suspense",
     synopsis: "Uma família em dificuldade financeira se infiltra na rotina de uma família rica, com consequências explosivas.",
-    streaming: ["Prime Video", "Telecine", "Apple TV (aluguel)"]
+    rating: "8.5",
+    streaming: ["Prime Video", "Telecine", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg"
   },
   "la-la-land": {
+    title: "La La Land",
+    genres: ["romance", "musical"],
+    genreText: "Romance / Musical",
     synopsis: "Uma atriz e um pianista se apaixonam enquanto tentam equilibrar amor e ambição em Los Angeles.",
-    streaming: ["Prime Video", "Apple TV (aluguel)", "Google Play (aluguel)"]
+    rating: "8.0",
+    streaming: ["Prime Video", "Apple TV (aluguel)", "Google Play (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg"
   },
   "a-origem": {
+    title: "A Origem",
+    genres: ["ficcao-cientifica", "acao"],
+    genreText: "Ficção científica / Ação",
     synopsis: "Dom Cobb lidera uma equipe para implantar uma ideia na mente de um alvo durante o sono profundo.",
-    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+    rating: "8.8",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg"
   },
   "batman-cavaleiro-das-trevas": {
+    title: "Batman: O Cavaleiro das Trevas",
+    genres: ["acao", "drama"],
+    genreText: "Ação / Drama",
     synopsis: "Com Gotham ameaçada pelo Coringa, Batman precisa testar seus limites para proteger a cidade.",
-    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+    rating: "9.0",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg"
   },
   "duna-parte-2": {
+    title: "Duna: Parte 2",
+    genres: ["ficcao-cientifica", "acao"],
+    genreText: "Ficção científica / Ação",
     synopsis: "Paul assume seu destino entre os Fremen e lidera a resistência em Arrakis contra o Império.",
-    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+    rating: "8.5",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg"
   },
   "whiplash": {
+    title: "Whiplash",
+    genres: ["drama"],
+    genreText: "Drama",
     synopsis: "A ambição de um jovem músico colide com os métodos extremos de um renomado maestro de jazz.",
-    streaming: ["Prime Video", "Telecine", "Apple TV (aluguel)"]
+    rating: "8.5",
+    streaming: ["Prime Video", "Telecine", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/7fn624j5lj3xTme2SgiLCeuedmO.jpg"
   },
   "clube-da-luta": {
+    title: "Clube da Luta",
+    genres: ["drama", "suspense"],
+    genreText: "Drama / Suspense",
     synopsis: "Um narrador desiludido cria, com Tyler Durden, um clube secreto que vira um movimento perigoso.",
-    streaming: ["Star+", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+    rating: "8.8",
+    streaming: ["Star+", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg"
   },
   "coco": {
+    title: "Viva: A Vida É uma Festa",
+    genres: ["animacao"],
+    genreText: "Animação",
     synopsis: "No Dia dos Mortos, Miguel atravessa para o além e desvenda a história de sua família.",
-    streaming: ["Disney+", "Prime Video (aluguel)", "Apple TV (aluguel)"]
+    rating: "8.4",
+    streaming: ["Disney+", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/6Ryitt95xrO8KXuqRGm1fUuNwqF.jpg"
   }
 };
+
+let movieData = {};
 
 // Chave OMDb fica no servidor (Vercel env var: OMDB_API_KEY).
 const OMDB_BASE_URL = "/api/omdb";
@@ -1056,12 +1118,9 @@ const detailStreaming = document.getElementById("detail-streaming");
 const scrollLeftBtn = document.getElementById("scroll-left");
 const scrollRightBtn = document.getElementById("scroll-right");
 
-function buildBulkMoviesData() {
-  const existingNormalizedTitles = new Set(
-    Array.from(document.querySelectorAll(".card .title")).map((titleNode) => normalizeTitle(titleNode.textContent))
-  );
+function buildBulkMoviesData(existingNormalizedTitles) {
   const addedTitles = new Set();
-  const usedIds = new Set(Object.keys(movieData));
+  const usedIds = new Set(Object.keys(initialMoviesCatalog));
   const bulkMoviesData = {};
 
   const groups = [
@@ -1107,17 +1166,10 @@ function buildBulkMoviesData() {
   return bulkMoviesData;
 }
 
-function addBulkMovies() {
-  const bulkMoviesData = buildBulkMoviesData();
+function renderMovieCards(catalog) {
+  moviesGrid.innerHTML = "";
 
-  Object.entries(bulkMoviesData).forEach(([movieId, info]) => {
-    // Keep all movies in the same data structure as the initial movieData entries.
-    movieData[movieId] = {
-      synopsis: info.synopsis,
-      rating: info.rating,
-      streaming: info.streaming
-    };
-
+  Object.entries(catalog).forEach(([movieId, info]) => {
     const card = document.createElement("a");
     card.className = "card movie-link";
     card.dataset.movieId = movieId;
@@ -1142,15 +1194,16 @@ function addBulkMovies() {
   });
 }
 
-addBulkMovies();
+function buildUnifiedMovieData() {
+  const existingNormalizedTitles = new Set(
+    Object.values(initialMoviesCatalog).map((movie) => normalizeTitle(movie.title))
+  );
+  const bulkMoviesData = buildBulkMoviesData(existingNormalizedTitles);
+  movieData = { ...initialMoviesCatalog, ...bulkMoviesData };
+}
 
-Array.from(document.querySelectorAll(".card")).forEach((card) => {
-  const titleNode = card.querySelector(".title");
-  const posterNode = card.querySelector(".poster");
-  if (titleNode && posterNode) {
-    attachPosterFallback(posterNode, titleNode.textContent);
-  }
-});
+buildUnifiedMovieData();
+renderMovieCards(movieData);
 
 function getMovieCards() {
   return Array.from(document.querySelectorAll(".card"));
