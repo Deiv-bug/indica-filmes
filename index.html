@@ -13,6 +13,22 @@
       <p class="subtitle">Uma seleção para maratonar no fim de semana</p>
     </header>
 
+    <section class="now-playing" id="now-playing" aria-label="Filmes em cartaz">
+      <div class="now-playing-copy">
+        <span class="eyebrow">Nos cinemas agora</span>
+        <h2 id="featured-title">Filmes em cartaz</h2>
+        <p id="featured-meta" class="featured-meta"></p>
+        <p id="featured-synopsis" class="featured-synopsis"></p>
+        <div class="featured-actions">
+          <button class="hero-arrow" id="featured-prev" type="button" aria-label="Filme em cartaz anterior">&#9664;</button>
+          <button class="hero-arrow" id="featured-next" type="button" aria-label="Próximo filme em cartaz">&#9654;</button>
+        </div>
+      </div>
+      <div class="now-playing-poster-wrap">
+        <img id="featured-poster" class="featured-poster" src="" alt="" />
+      </div>
+    </section>
+
     <div class="filter-bar">
       <label class="filter-label" for="movie-search">Pesquisar filme:</label>
       <input class="search-input" id="movie-search" type="search" placeholder="Digite o nome do filme" aria-label="Pesquisar por nome do filme" />

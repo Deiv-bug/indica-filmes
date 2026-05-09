@@ -115,6 +115,45 @@ let movieData = {};
 const OMDB_BASE_URL = "/api/omdb";
 const OMDB_CACHE_KEY = "omdb_cache_v1";
 
+const nowPlayingMovies = [
+  {
+    title: "Mortal Kombat II",
+    queryTitle: "Mortal Kombat II",
+    meta: "Ação / Aventura • Estreia: 7 de maio de 2026",
+    synopsis: "Os campeões entram em uma nova fase do torneio, agora com Johnny Cage e ameaças ainda maiores contra a Terra."
+  },
+  {
+    title: "O Diabo Veste Prada 2",
+    queryTitle: "The Devil Wears Prada 2",
+    meta: "Comédia / Drama • Em cartaz",
+    synopsis: "Miranda, Andy e Emily retornam ao mundo da moda em uma indústria transformada por novas pressões e disputas."
+  },
+  {
+    title: "Michael",
+    queryTitle: "Michael 2026",
+    meta: "Biografia / Drama / Musical • Em cartaz",
+    synopsis: "A cinebiografia acompanha a trajetória de Michael Jackson, dos primeiros passos ao estrelato mundial."
+  },
+  {
+    title: "Super Mario Galaxy: O Filme",
+    queryTitle: "The Super Mario Galaxy Movie",
+    meta: "Animação / Aventura / Ação • Em cartaz",
+    synopsis: "Mario e seus aliados partem para uma aventura galáctica depois de salvar o Reino dos Cogumelos."
+  },
+  {
+    title: "As Ovelhas Detetives",
+    queryTitle: "The Sheep Detectives",
+    meta: "Comédia / Policial • Estreia: 7 de maio de 2026",
+    synopsis: "Um rebanho curioso, acostumado a ouvir histórias de mistério, se envolve em uma investigação nada comum."
+  },
+  {
+    title: "Maldição Da Múmia",
+    queryTitle: "Lee Cronin's The Mummy",
+    meta: "Suspense / Terror • Em cartaz",
+    synopsis: "O reaparecimento inexplicável de uma jovem desaparecida reacende um mistério sombrio ligado ao deserto."
+  }
+];
+
 const omdbTitleAliases = {
   "o jogo da imitacao": "The Imitation Game",
   "diario de um banana": "Diary of a Wimpy Kid",
@@ -485,12 +524,15 @@ function createPosterFallback(title) {
 function attachPosterFallback(img, title) {
   const fallbackSrc = createPosterFallback(title);
   img.dataset.fallbackSrc = fallbackSrc;
+  if (img.dataset.hasFallbackHandler === "true") return;
   const applyFallback = () => {
-    if (img.src !== fallbackSrc) {
-      img.src = fallbackSrc;
+    const currentFallback = img.dataset.fallbackSrc;
+    if (img.src !== currentFallback) {
+      img.src = currentFallback;
     }
   };
   img.addEventListener("error", applyFallback);
+  img.dataset.hasFallbackHandler = "true";
   // If the image has already failed before the listener was attached, recover immediately.
   if (img.complete && img.naturalWidth === 0) {
     applyFallback();
@@ -1113,6 +1155,13 @@ const genreFilter = document.getElementById("genre-filter");
 const movieSearch = document.getElementById("movie-search");
 const moviesGrid = document.getElementById("movies-grid");
 const emptyState = document.getElementById("empty-state");
+const nowPlayingSection = document.getElementById("now-playing");
+const featuredTitle = document.getElementById("featured-title");
+const featuredMeta = document.getElementById("featured-meta");
+const featuredSynopsis = document.getElementById("featured-synopsis");
+const featuredPoster = document.getElementById("featured-poster");
+const featuredPrevBtn = document.getElementById("featured-prev");
+const featuredNextBtn = document.getElementById("featured-next");
 const pageHeader = document.querySelector("header");
 const filterBar = document.querySelector(".filter-bar");
 const moviesNav = document.querySelector(".movies-nav");
@@ -1125,6 +1174,8 @@ const detailSynopsis = document.getElementById("detail-synopsis");
 const detailStreaming = document.getElementById("detail-streaming");
 const scrollLeftBtn = document.getElementById("scroll-left");
 const scrollRightBtn = document.getElementById("scroll-right");
+let featuredIndex = 0;
+let featuredIntervalId = null;
 
 function buildBulkMoviesData(existingNormalizedTitles) {
   const addedTitles = new Set();
@@ -1213,6 +1264,50 @@ function buildUnifiedMovieData() {
 buildUnifiedMovieData();
 renderMovieCards(movieData);
 
+function showFeaturedMovie(index) {
+  if (!featuredTitle || !featuredMeta || !featuredSynopsis || !featuredPoster) return;
+  featuredIndex = (index + nowPlayingMovies.length) % nowPlayingMovies.length;
+  const movie = nowPlayingMovies[featuredIndex];
+
+  featuredTitle.textContent = movie.title;
+  featuredMeta.textContent = movie.meta;
+  featuredSynopsis.textContent = movie.synopsis;
+  featuredPoster.src = createPosterForTitle(movie.title);
+  featuredPoster.alt = "Cartaz do filme " + movie.title;
+  attachPosterFallback(featuredPoster, movie.title);
+}
+
+async function enrichFeaturedPoster() {
+  if (!featuredPoster) return;
+  const movie = nowPlayingMovies[featuredIndex];
+  const realData = await fetchOmdbData(movie.queryTitle || movie.title);
+  if (realData && realData.poster && nowPlayingMovies[featuredIndex] === movie) {
+    featuredPoster.src = realData.poster;
+  }
+}
+
+function moveFeaturedMovie(direction) {
+  showFeaturedMovie(featuredIndex + direction);
+  enrichFeaturedPoster();
+}
+
+function startFeaturedCarousel() {
+  if (!featuredTitle || nowPlayingMovies.length === 0) return;
+  showFeaturedMovie(0);
+  enrichFeaturedPoster();
+  featuredIntervalId = window.setInterval(() => {
+    moveFeaturedMovie(1);
+  }, 5500);
+}
+
+function restartFeaturedCarousel(direction) {
+  if (featuredIntervalId) window.clearInterval(featuredIntervalId);
+  moveFeaturedMovie(direction);
+  featuredIntervalId = window.setInterval(() => {
+    moveFeaturedMovie(1);
+  }, 5500);
+}
+
 function getMovieCards() {
   return Array.from(document.querySelectorAll(".card"));
 }
@@ -1279,6 +1374,7 @@ moviesGrid.addEventListener("click", (event) => {
   });
 
   pageHeader.style.display = "none";
+  if (nowPlayingSection) nowPlayingSection.style.display = "none";
   filterBar.style.display = "none";
   moviesNav.style.display = "none";
   emptyState.style.display = "none";
@@ -1287,6 +1383,7 @@ moviesGrid.addEventListener("click", (event) => {
 
 backToListBtn.addEventListener("click", () => {
   pageHeader.style.display = "";
+  if (nowPlayingSection) nowPlayingSection.style.display = "";
   filterBar.style.display = "";
   moviesNav.style.display = "";
   movieDetail.hidden = true;
@@ -1301,5 +1398,9 @@ scrollRightBtn.addEventListener("click", () => {
   moviesGrid.scrollBy({ left: 420, behavior: "smooth" });
 });
 
+if (featuredPrevBtn) featuredPrevBtn.addEventListener("click", () => restartFeaturedCarousel(-1));
+if (featuredNextBtn) featuredNextBtn.addEventListener("click", () => restartFeaturedCarousel(1));
+
+startFeaturedCarousel();
 applyGenreFilter();
 enrichMoviesWithRealData();
