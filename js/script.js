@@ -603,8 +603,9 @@ async function fetchOmdbByTitleCandidate(candidate) {
   if (!data || data.error) return null;
   const rating = data.imdbRating || null;
   const synopsis = data.plot || null;
-  if (!rating && !synopsis) return null;
-  return { rating, synopsis };
+  const poster = data.poster || null;
+  if (!rating && !synopsis && !poster) return null;
+  return { rating, synopsis, poster };
 }
 
 async function fetchOmdbBySearch(title) {
@@ -621,9 +622,13 @@ async function fetchOmdbBySearch(title) {
 
 function shouldFetchRealData(card, info) {
   if (!info) return false;
+  const posterNode = card.querySelector(".poster");
+  const posterSrc = posterNode ? posterNode.getAttribute("src") || "" : "";
   const ratingText = card.querySelector(".rating") ? card.querySelector(".rating").textContent.trim() : "";
   const synopsisText = (info.synopsis || "").toLowerCase();
+  const hasAutoPoster = posterSrc.startsWith("data:image") || (info.poster || "").startsWith("data:image");
   return (
+    hasAutoPoster ||
     ratingText === "N/D" ||
     synopsisText.includes("sinopse detalhada") ||
     synopsisText.includes("é uma indicação de")
@@ -652,11 +657,14 @@ async function fetchOmdbData(title) {
 function applyRealDataToCard(card, movieId, realData) {
   const ratingNode = card.querySelector(".rating");
   const descNode = card.querySelector(".desc");
+  const posterNode = card.querySelector(".poster");
   if (realData.rating && ratingNode) ratingNode.textContent = realData.rating;
   if (realData.synopsis && descNode) descNode.textContent = realData.synopsis;
+  if (realData.poster && posterNode) posterNode.src = realData.poster;
   if (!movieData[movieId]) movieData[movieId] = { streaming: ["Não informado"] };
   if (realData.rating) movieData[movieId].rating = realData.rating;
   if (realData.synopsis) movieData[movieId].synopsis = realData.synopsis;
+  if (realData.poster) movieData[movieId].poster = realData.poster;
 }
 
 async function enrichMoviesWithRealData() {
@@ -675,7 +683,7 @@ async function enrichMoviesWithRealData() {
 
     if (cache[normalizedTitle]) {
       applyRealDataToCard(card, movieId, cache[normalizedTitle]);
-      continue;
+      if (!shouldFetchRealData(card, movieData[movieId])) continue;
     }
 
     const realData = await fetchOmdbData(title);

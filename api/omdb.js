@@ -49,7 +49,8 @@ module.exports = async function handler(req, res) {
             title: item.Title || null,
             year: item.Year || null,
             imdbID: item.imdbID || null,
-            type: item.Type || null
+            type: item.Type || null,
+            poster: item.Poster && item.Poster !== "N/A" ? item.Poster : null
           }))
         : [];
       res.statusCode = 200;
@@ -61,7 +62,8 @@ module.exports = async function handler(req, res) {
     res.end(JSON.stringify({
       title: data.Title || null,
       imdbRating: data.imdbRating && data.imdbRating !== "N/A" ? data.imdbRating : null,
-      plot: data.Plot && data.Plot !== "N/A" ? data.Plot : null
+      plot: data.Plot && data.Plot !== "N/A" ? data.Plot : null,
+      poster: data.Poster && data.Poster !== "N/A" ? data.Poster : null
     }));
   } catch (_error) {
     res.statusCode = 500;
