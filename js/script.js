@@ -451,6 +451,7 @@ const streamingLogos = {
   "Google Play": { short: "GP", bg: "#34a853" },
   "Star+": { short: "S+", bg: "#1f7aff" },
   "Disney+": { short: "D+", bg: "#113ccf" },
+  "Cinema": { short: "CINE", bg: "#b45309" },
   "Não informado": { short: "--", bg: "#334155" }
 };
 
@@ -1160,7 +1161,7 @@ const featuredTitle = document.getElementById("featured-title");
 const featuredMeta = document.getElementById("featured-meta");
 const featuredSynopsis = document.getElementById("featured-synopsis");
 const featuredPoster = document.getElementById("featured-poster");
-const featuredPosterSynopsis = document.getElementById("featured-poster-synopsis");
+const featuredOpenDetailBtn = document.getElementById("featured-open-detail");
 const pageHeader = document.querySelector("header");
 const filterBar = document.querySelector(".filter-bar");
 const moviesNav = document.querySelector(".movies-nav");
@@ -1271,7 +1272,6 @@ function showFeaturedMovie(index) {
   featuredTitle.textContent = movie.title;
   featuredMeta.textContent = movie.meta;
   featuredSynopsis.textContent = movie.synopsis;
-  if (featuredPosterSynopsis) featuredPosterSynopsis.textContent = movie.synopsis;
   featuredPoster.src = createPosterForTitle(movie.title);
   featuredPoster.alt = "Cartaz do filme " + movie.title;
   attachPosterFallback(featuredPoster, movie.title);
@@ -1293,11 +1293,18 @@ function moveFeaturedMovie(direction) {
 
 function startFeaturedCarousel() {
   if (!featuredTitle || nowPlayingMovies.length === 0) return;
+  if (featuredIntervalId) window.clearInterval(featuredIntervalId);
   showFeaturedMovie(0);
   enrichFeaturedPoster();
   featuredIntervalId = window.setInterval(() => {
     moveFeaturedMovie(1);
   }, 5500);
+}
+
+function stopFeaturedCarousel() {
+  if (!featuredIntervalId) return;
+  window.clearInterval(featuredIntervalId);
+  featuredIntervalId = null;
 }
 
 function getMovieCards() {
@@ -1326,28 +1333,10 @@ function applyGenreFilter() {
 genreFilter.addEventListener("change", applyGenreFilter);
 if (movieSearch) movieSearch.addEventListener("input", applyGenreFilter);
 
-moviesGrid.addEventListener("click", (event) => {
-  const link = event.target.closest(".movie-link");
-  if (!link) return;
-
-  event.preventDefault();
-  const movieId = link.dataset.movieId;
-  const info = movieData[movieId];
-  if (!info) return;
-
-  const poster = link.querySelector(".poster");
-  const title = link.querySelector(".title").textContent;
-  const genre = link.querySelector(".genre").textContent;
-  const rating = link.querySelector(".rating") ? link.querySelector(".rating").textContent : "";
-
-  detailPoster.src = poster.src;
-  detailPoster.alt = poster.alt;
-  detailTitle.textContent = title;
-  detailGenre.textContent = rating ? genre + " • Nota: " + rating : genre;
-  detailSynopsis.textContent = info.synopsis;
+function renderStreamingServices(services) {
   detailStreaming.innerHTML = "";
 
-  info.streaming.forEach((service) => {
+  services.forEach((service) => {
     const item = document.createElement("li");
     const serviceBaseName = service.split(" (")[0];
     const logoConfig = streamingLogos[serviceBaseName] || streamingLogos["Não informado"];
@@ -1364,13 +1353,60 @@ moviesGrid.addEventListener("click", (event) => {
     item.appendChild(label);
     detailStreaming.appendChild(item);
   });
+}
 
+function openMovieDetailPage(detail) {
+  detailPoster.src = detail.posterSrc;
+  detailPoster.alt = detail.posterAlt;
+  detailTitle.textContent = detail.title;
+  detailGenre.textContent = detail.meta;
+  detailSynopsis.textContent = detail.synopsis;
+  renderStreamingServices(detail.streaming);
   pageHeader.style.display = "none";
   if (nowPlayingSection) nowPlayingSection.style.display = "none";
   filterBar.style.display = "none";
   moviesNav.style.display = "none";
   emptyState.style.display = "none";
   movieDetail.hidden = false;
+  stopFeaturedCarousel();
+}
+
+function openFeaturedMovieDetail() {
+  const movie = nowPlayingMovies[featuredIndex];
+  if (!movie || !featuredPoster) return;
+
+  openMovieDetailPage({
+    posterSrc: featuredPoster.src,
+    posterAlt: featuredPoster.alt,
+    title: movie.title,
+    meta: movie.meta,
+    synopsis: movie.synopsis,
+    streaming: ["Cinema"]
+  });
+}
+
+moviesGrid.addEventListener("click", (event) => {
+  const link = event.target.closest(".movie-link");
+  if (!link) return;
+
+  event.preventDefault();
+  const movieId = link.dataset.movieId;
+  const info = movieData[movieId];
+  if (!info) return;
+
+  const poster = link.querySelector(".poster");
+  const title = link.querySelector(".title").textContent;
+  const genre = link.querySelector(".genre").textContent;
+  const rating = link.querySelector(".rating") ? link.querySelector(".rating").textContent : "";
+
+  openMovieDetailPage({
+    posterSrc: poster.src,
+    posterAlt: poster.alt,
+    title: title,
+    meta: rating ? genre + " • Nota: " + rating : genre,
+    synopsis: info.synopsis,
+    streaming: info.streaming
+  });
 });
 
 backToListBtn.addEventListener("click", () => {
@@ -1379,6 +1415,7 @@ backToListBtn.addEventListener("click", () => {
   filterBar.style.display = "";
   moviesNav.style.display = "";
   movieDetail.hidden = true;
+  startFeaturedCarousel();
   applyGenreFilter();
 });
 
@@ -1389,6 +1426,8 @@ scrollLeftBtn.addEventListener("click", () => {
 scrollRightBtn.addEventListener("click", () => {
   moviesGrid.scrollBy({ left: 420, behavior: "smooth" });
 });
+
+if (featuredOpenDetailBtn) featuredOpenDetailBtn.addEventListener("click", openFeaturedMovieDetail);
 
 startFeaturedCarousel();
 applyGenreFilter();
