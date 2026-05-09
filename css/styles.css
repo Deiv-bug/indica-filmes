@@ -107,30 +107,12 @@
       max-width: 680px;
     }
 
-    .featured-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 22px;
-    }
-
-    .hero-arrow {
-      width: 42px;
-      height: 42px;
-      border: 1px solid rgba(245, 158, 11, 0.38);
-      border-radius: 999px;
-      background: rgba(11, 18, 32, 0.82);
-      color: var(--text);
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    .hero-arrow:hover {
-      background: rgba(245, 158, 11, 0.18);
-    }
-
     .now-playing-poster-wrap {
       justify-self: end;
       width: min(230px, 100%);
+      border-radius: 22px;
+      cursor: pointer;
+      overflow: hidden;
     }
 
     .featured-poster {
@@ -142,6 +124,55 @@
       border-radius: 22px;
       background: #0b1220;
       box-shadow: 0 22px 44px rgba(0, 0, 0, 0.38);
+      transition: filter 0.28s ease, transform 0.28s ease;
+    }
+
+    .featured-poster-info {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.1), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 22px;
+      color: var(--text);
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+
+    .featured-poster-info span {
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .featured-poster-info p {
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+
+    .now-playing-poster-wrap:hover .featured-poster,
+    .now-playing-poster-wrap:focus-visible .featured-poster {
+      filter: brightness(0.42);
+      transform: scale(1.06);
+    }
+
+    .now-playing-poster-wrap:hover .featured-poster-info,
+    .now-playing-poster-wrap:focus-visible .featured-poster-info {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .now-playing-poster-wrap:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
     }
 
     .filter-bar {

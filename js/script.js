@@ -1160,8 +1160,7 @@ const featuredTitle = document.getElementById("featured-title");
 const featuredMeta = document.getElementById("featured-meta");
 const featuredSynopsis = document.getElementById("featured-synopsis");
 const featuredPoster = document.getElementById("featured-poster");
-const featuredPrevBtn = document.getElementById("featured-prev");
-const featuredNextBtn = document.getElementById("featured-next");
+const featuredPosterSynopsis = document.getElementById("featured-poster-synopsis");
 const pageHeader = document.querySelector("header");
 const filterBar = document.querySelector(".filter-bar");
 const moviesNav = document.querySelector(".movies-nav");
@@ -1272,6 +1271,7 @@ function showFeaturedMovie(index) {
   featuredTitle.textContent = movie.title;
   featuredMeta.textContent = movie.meta;
   featuredSynopsis.textContent = movie.synopsis;
+  if (featuredPosterSynopsis) featuredPosterSynopsis.textContent = movie.synopsis;
   featuredPoster.src = createPosterForTitle(movie.title);
   featuredPoster.alt = "Cartaz do filme " + movie.title;
   attachPosterFallback(featuredPoster, movie.title);
@@ -1295,14 +1295,6 @@ function startFeaturedCarousel() {
   if (!featuredTitle || nowPlayingMovies.length === 0) return;
   showFeaturedMovie(0);
   enrichFeaturedPoster();
-  featuredIntervalId = window.setInterval(() => {
-    moveFeaturedMovie(1);
-  }, 5500);
-}
-
-function restartFeaturedCarousel(direction) {
-  if (featuredIntervalId) window.clearInterval(featuredIntervalId);
-  moveFeaturedMovie(direction);
   featuredIntervalId = window.setInterval(() => {
     moveFeaturedMovie(1);
   }, 5500);
@@ -1397,9 +1389,6 @@ scrollLeftBtn.addEventListener("click", () => {
 scrollRightBtn.addEventListener("click", () => {
   moviesGrid.scrollBy({ left: 420, behavior: "smooth" });
 });
-
-if (featuredPrevBtn) featuredPrevBtn.addEventListener("click", () => restartFeaturedCarousel(-1));
-if (featuredNextBtn) featuredNextBtn.addEventListener("click", () => restartFeaturedCarousel(1));
 
 startFeaturedCarousel();
 applyGenreFilter();
