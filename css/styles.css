@@ -277,6 +277,12 @@
       min-width: 220px;
     }
 
+    .recommendation-title {
+      font-size: clamp(1.45rem, 3vw, 2rem);
+      margin: 8px 0 14px;
+      text-align: center;
+    }
+
     .empty-state {
       color: var(--muted);
       text-align: center;
