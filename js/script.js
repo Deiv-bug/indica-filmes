@@ -226,6 +226,96 @@ const topRatedMoviesCatalog = {
     rating: "8.8",
     streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
     poster: "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg"
+  },
+  "top-12-homens-e-uma-sentenca": {
+    title: "12 Homens e uma Sentença",
+    genres: ["drama"],
+    genreText: "Drama / Tribunal",
+    synopsis: "Doze jurados discutem o destino de um jovem acusado de assassinato, revelando preconceitos, dúvidas e tensões morais.",
+    rating: "9.0",
+    streaming: ["Prime Video (aluguel)", "Apple TV (aluguel)", "Google Play (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/ow3wq89wM8qd5X7hWKxiRfsFf9C.jpg"
+  },
+  "top-a-sociedade-do-anel": {
+    title: "O Senhor dos Anéis: A Sociedade do Anel",
+    genres: ["fantasia", "aventura"],
+    genreText: "Fantasia / Aventura",
+    synopsis: "Frodo parte da Terra-média com uma sociedade formada para destruir o Um Anel antes que Sauron domine tudo.",
+    rating: "8.9",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg"
+  },
+  "top-tres-homens-em-conflito": {
+    title: "Três Homens em Conflito",
+    genres: ["aventura", "drama"],
+    genreText: "Faroeste / Aventura",
+    synopsis: "Três pistoleiros rivais atravessam a Guerra Civil em busca de um tesouro escondido.",
+    rating: "8.8",
+    streaming: ["Prime Video (aluguel)", "Apple TV (aluguel)", "Google Play (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/bX2xnavhMYjWDoZp1VM6VnU1xwe.jpg"
+  },
+  "top-as-duas-torres": {
+    title: "O Senhor dos Anéis: As Duas Torres",
+    genres: ["fantasia", "aventura"],
+    genreText: "Fantasia / Aventura",
+    synopsis: "A sociedade se divide enquanto Frodo e Sam seguem para Mordor e seus aliados enfrentam a força crescente de Saruman.",
+    rating: "8.8",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/5VTN0pR8gcqV3EPUHHfMGnJYN9L.jpg"
+  },
+  "top-forrest-gump": {
+    title: "Forrest Gump",
+    genres: ["drama", "romance"],
+    genreText: "Drama / Romance",
+    synopsis: "Forrest atravessa momentos marcantes da história americana enquanto busca amor, amizade e seu próprio caminho.",
+    rating: "8.8",
+    streaming: ["Paramount+", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQ.jpg"
+  },
+  "top-clube-da-luta": {
+    title: "Clube da Luta",
+    genres: ["drama", "suspense"],
+    genreText: "Drama / Suspense",
+    synopsis: "Um homem entediado encontra Tyler Durden e cria um clube secreto que se transforma em um movimento perigoso.",
+    rating: "8.8",
+    streaming: ["Prime Video (aluguel)", "Apple TV (aluguel)", "Google Play (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg"
+  },
+  "top-matrix": {
+    title: "Matrix",
+    genres: ["ficcao-cientifica", "acao"],
+    genreText: "Ficção científica / Ação",
+    synopsis: "Neo descobre que sua realidade é uma simulação e precisa escolher entre continuar preso ou enfrentar o sistema.",
+    rating: "8.7",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg"
+  },
+  "top-os-bons-companheiros": {
+    title: "Os Bons Companheiros",
+    genres: ["drama"],
+    genreText: "Crime / Drama",
+    synopsis: "Henry Hill cresce dentro da máfia e descobre o preço da lealdade em uma vida de dinheiro, violência e traição.",
+    rating: "8.7",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/aKuFiU82s5ISJpGZp7YkIr3kCUd.jpg"
+  },
+  "top-seven": {
+    title: "Seven: Os Sete Crimes Capitais",
+    genres: ["suspense", "drama"],
+    genreText: "Suspense / Drama",
+    synopsis: "Dois detetives investigam assassinatos brutais inspirados nos sete pecados capitais.",
+    rating: "8.6",
+    streaming: ["Prime Video (aluguel)", "Apple TV (aluguel)", "Google Play (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/6yoghtyTpznpBik8EngEmJskVUO.jpg"
+  },
+  "top-a-viagem-de-chihiro": {
+    title: "A Viagem de Chihiro",
+    genres: ["animacao", "fantasia"],
+    genreText: "Animação / Fantasia",
+    synopsis: "Chihiro entra em um mundo espiritual misterioso e precisa amadurecer para salvar seus pais e encontrar o caminho de volta.",
+    rating: "8.6",
+    streaming: ["Netflix", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg"
   }
 };
 
