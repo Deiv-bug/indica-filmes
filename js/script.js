@@ -1372,16 +1372,23 @@ buildUnifiedMovieData();
 renderTopRatedCards(topRatedMoviesCatalog);
 renderMovieCards(movieData);
 
+function setFeaturedBackground(posterSrc) {
+  if (!nowPlayingSection || !posterSrc) return;
+  nowPlayingSection.style.setProperty("--featured-bg", 'url("' + posterSrc + '")');
+}
+
 function showFeaturedMovie(index) {
   if (!featuredTitle || !featuredMeta || !featuredSynopsis || !featuredPoster) return;
   featuredIndex = (index + nowPlayingMovies.length) % nowPlayingMovies.length;
   const movie = nowPlayingMovies[featuredIndex];
+  const posterSrc = createPosterForTitle(movie.title);
 
   featuredTitle.textContent = movie.title;
   featuredMeta.textContent = movie.meta;
   featuredSynopsis.textContent = movie.synopsis;
-  featuredPoster.src = createPosterForTitle(movie.title);
+  featuredPoster.src = posterSrc;
   featuredPoster.alt = "Cartaz do filme " + movie.title;
+  setFeaturedBackground(posterSrc);
   attachPosterFallback(featuredPoster, movie.title);
 }
 
@@ -1391,6 +1398,7 @@ async function enrichFeaturedPoster() {
   const realData = await fetchOmdbData(movie.queryTitle || movie.title);
   if (realData && realData.poster && nowPlayingMovies[featuredIndex] === movie) {
     featuredPoster.src = realData.poster;
+    setFeaturedBackground(realData.poster);
   }
 }
 
