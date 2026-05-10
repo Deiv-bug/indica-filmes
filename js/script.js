@@ -154,6 +154,81 @@ const nowPlayingMovies = [
   }
 ];
 
+const topRatedMoviesCatalog = {
+  "top-um-sonho-de-liberdade": {
+    title: "Um Sonho de Liberdade",
+    genres: ["drama"],
+    genreText: "Drama",
+    synopsis: "Andy Dufresne é condenado à prisão perpétua e encontra em Red uma amizade capaz de atravessar décadas de injustiça e esperança.",
+    rating: "9.3",
+    streaming: ["Prime Video (aluguel)", "Apple TV (aluguel)", "Google Play (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg"
+  },
+  "top-o-poderoso-chefao": {
+    title: "O Poderoso Chefão",
+    genres: ["drama"],
+    genreText: "Drama / Crime",
+    synopsis: "A família Corleone passa por uma mudança de poder quando Michael é puxado para o centro dos negócios da máfia.",
+    rating: "9.2",
+    streaming: ["Paramount+", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg"
+  },
+  "top-batman-cavaleiro-das-trevas": {
+    title: "Batman: O Cavaleiro das Trevas",
+    genres: ["acao", "drama"],
+    genreText: "Ação / Drama",
+    synopsis: "Batman, Gordon e Harvey Dent enfrentam o caos provocado pelo Coringa, que força Gotham a encarar seus próprios limites.",
+    rating: "9.0",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg"
+  },
+  "top-o-poderoso-chefao-parte-2": {
+    title: "O Poderoso Chefão: Parte II",
+    genres: ["drama"],
+    genreText: "Drama / Crime",
+    synopsis: "A ascensão de Vito Corleone é contada em paralelo ao isolamento de Michael enquanto ele consolida o poder da família.",
+    rating: "9.0",
+    streaming: ["Paramount+", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/hek3koDUyRQk7FIhPXsa6mT2Zc3.jpg"
+  },
+  "top-o-retorno-do-rei": {
+    title: "O Senhor dos Anéis: O Retorno do Rei",
+    genres: ["fantasia", "aventura"],
+    genreText: "Fantasia / Aventura",
+    synopsis: "Enquanto Frodo se aproxima de Mordor, Aragorn lidera a última resistência contra Sauron em uma batalha decisiva.",
+    rating: "9.0",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg"
+  },
+  "top-a-lista-de-schindler": {
+    title: "A Lista de Schindler",
+    genres: ["drama"],
+    genreText: "Drama / Histórico",
+    synopsis: "Oskar Schindler usa sua influência e sua fábrica para salvar judeus durante o Holocausto.",
+    rating: "9.0",
+    streaming: ["Prime Video (aluguel)", "Apple TV (aluguel)", "Google Play (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg"
+  },
+  "top-pulp-fiction": {
+    title: "Pulp Fiction",
+    genres: ["drama"],
+    genreText: "Crime / Drama",
+    synopsis: "Histórias de criminosos, boxeadores e assassinos se cruzam em uma Los Angeles violenta, estilosa e imprevisível.",
+    rating: "8.9",
+    streaming: ["Prime Video (aluguel)", "Apple TV (aluguel)", "Google Play (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg"
+  },
+  "top-a-origem": {
+    title: "A Origem",
+    genres: ["ficcao-cientifica", "acao"],
+    genreText: "Ficção científica / Ação",
+    synopsis: "Dom Cobb lidera uma equipe especializada em invadir sonhos para implantar uma ideia impossível.",
+    rating: "8.8",
+    streaming: ["Max", "Prime Video (aluguel)", "Apple TV (aluguel)"],
+    poster: "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg"
+  }
+};
+
 const omdbTitleAliases = {
   "o jogo da imitacao": "The Imitation Game",
   "diario de um banana": "Diary of a Wimpy Kid",
@@ -451,6 +526,7 @@ const streamingLogos = {
   "Google Play": { short: "GP", bg: "#34a853" },
   "Star+": { short: "S+", bg: "#1f7aff" },
   "Disney+": { short: "D+", bg: "#113ccf" },
+  "Paramount+": { short: "P+", bg: "#0064ff" },
   "Cinema": { short: "CINE", bg: "#b45309" },
   "Não informado": { short: "--", bg: "#334155" }
 };
@@ -1157,6 +1233,8 @@ const movieSearch = document.getElementById("movie-search");
 const moviesGrid = document.getElementById("movies-grid");
 const emptyState = document.getElementById("empty-state");
 const nowPlayingSection = document.getElementById("now-playing");
+const topRatedSection = document.getElementById("top-rated-section");
+const topRatedGrid = document.getElementById("top-rated-grid");
 const featuredTitle = document.getElementById("featured-title");
 const featuredMeta = document.getElementById("featured-meta");
 const featuredSynopsis = document.getElementById("featured-synopsis");
@@ -1253,6 +1331,35 @@ function renderMovieCards(catalog) {
   });
 }
 
+function renderTopRatedCards(catalog) {
+  if (!topRatedGrid) return;
+  topRatedGrid.innerHTML = "";
+
+  Object.entries(catalog).forEach(([movieId, info]) => {
+    const card = document.createElement("a");
+    card.className = "top-rated-card movie-link";
+    card.dataset.movieId = movieId;
+    card.dataset.genres = info.genres.join(",");
+    card.href = "#";
+    card.setAttribute("aria-label", "Saber mais sobre " + info.title);
+
+    card.innerHTML =
+      '<img class="top-rated-poster poster" src="' + info.poster + '" alt="Cartaz do filme ' + info.title + '" />' +
+      '<div class="top-rated-content">' +
+        '<div class="title-row">' +
+          '<h3 class="top-rated-title title">' + info.title + '</h3>' +
+          '<span class="rating">' + info.rating + '</span>' +
+        '</div>' +
+        '<p class="top-rated-meta genre">' + info.genreText + '</p>' +
+        '<p class="top-rated-desc desc">' + info.synopsis + '</p>' +
+      '</div>';
+
+    topRatedGrid.appendChild(card);
+    const cardPoster = card.querySelector(".poster");
+    if (cardPoster) attachPosterFallback(cardPoster, info.title);
+  });
+}
+
 function buildUnifiedMovieData() {
   const existingNormalizedTitles = new Set(
     Object.values(initialMoviesCatalog).map((movie) => normalizeTitle(movie.title))
@@ -1262,6 +1369,7 @@ function buildUnifiedMovieData() {
 }
 
 buildUnifiedMovieData();
+renderTopRatedCards(topRatedMoviesCatalog);
 renderMovieCards(movieData);
 
 function showFeaturedMovie(index) {
@@ -1308,7 +1416,7 @@ function stopFeaturedCarousel() {
 }
 
 function getMovieCards() {
-  return Array.from(document.querySelectorAll(".card"));
+  return Array.from(moviesGrid.querySelectorAll(".card"));
 }
 
 function applyGenreFilter() {
@@ -1364,6 +1472,7 @@ function openMovieDetailPage(detail) {
   renderStreamingServices(detail.streaming);
   pageHeader.style.display = "none";
   if (nowPlayingSection) nowPlayingSection.style.display = "none";
+  if (topRatedSection) topRatedSection.style.display = "none";
   filterBar.style.display = "none";
   moviesNav.style.display = "none";
   emptyState.style.display = "none";
@@ -1385,13 +1494,17 @@ function openFeaturedMovieDetail() {
   });
 }
 
-moviesGrid.addEventListener("click", (event) => {
+function getMovieInfo(movieId) {
+  return movieData[movieId] || topRatedMoviesCatalog[movieId];
+}
+
+function handleMovieCardClick(event) {
   const link = event.target.closest(".movie-link");
   if (!link) return;
 
   event.preventDefault();
   const movieId = link.dataset.movieId;
-  const info = movieData[movieId];
+  const info = getMovieInfo(movieId);
   if (!info) return;
 
   const poster = link.querySelector(".poster");
@@ -1407,11 +1520,15 @@ moviesGrid.addEventListener("click", (event) => {
     synopsis: info.synopsis,
     streaming: info.streaming
   });
-});
+}
+
+moviesGrid.addEventListener("click", handleMovieCardClick);
+if (topRatedGrid) topRatedGrid.addEventListener("click", handleMovieCardClick);
 
 backToListBtn.addEventListener("click", () => {
   pageHeader.style.display = "";
   if (nowPlayingSection) nowPlayingSection.style.display = "";
+  if (topRatedSection) topRatedSection.style.display = "";
   filterBar.style.display = "";
   moviesNav.style.display = "";
   movieDetail.hidden = true;
